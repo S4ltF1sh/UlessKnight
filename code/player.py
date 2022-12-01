@@ -13,7 +13,6 @@ class Player(pygame.sprite.Sprite):
         self.animation_speed = 0.15
         self.image = self.animations['idle'][self.frame_index]
         self.rect = self.image.get_rect(topleft=pos)
-        self.prev_pos = self.rect.centerx
 
         # dust particles
         self.import_dust_run_particles()

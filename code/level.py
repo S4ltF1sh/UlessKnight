@@ -1,12 +1,13 @@
 import pygame
 
 from check_point import CheckPoint
+from fakedoor import FakeDoorBlock
+from realdoor import RealDoorBlock
 from tree import Tree
-
 from cloud import Cloud
 from gravity_block import GravityBlock
-
 from hide_block import HideBlock
+
 from tiles import Tile
 from settings import tile_size, screen_width
 from player import Player
@@ -84,6 +85,12 @@ class Level:
                     tile = CheckPoint((tile_x, y), tile_size)
                     tile.real_pos = (x, y)
                     self.tiles.add(tile)
+                elif cell == 'F':
+                    tile = FakeDoorBlock((tile_x, y), tile_size)
+                    self.tiles.add(tile)
+                elif cell == 'R':
+                    tile = RealDoorBlock((tile_x, y), tile_size)
+                    self.tiles.add(tile)
 
                 if cell == 'P':
                     player_sprite = Player((x, y), self.display_surface, self.create_jump_particles)
@@ -123,6 +130,9 @@ class Level:
                 if isinstance(tile, CheckPoint):
                     self.spawn_point = tile.real_pos
                     tile.isChecked = True
+                if isinstance(tile, RealDoorBlock):
+                    tile.isChecked = True
+                    # update wingame state
 
         if player.on_left and (player.rect.left < self.current_x or player.direction.x >= 0):
             player.on_left = False
