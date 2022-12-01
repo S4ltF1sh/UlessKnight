@@ -8,6 +8,7 @@ class CheckPoint(Tile):
         super().__init__(pos, size)
         self.can_be_collided = False
         self.pos = pos
+        self.real_pos = (0, 0)
         self.image = pygame.image.load('../graphics/checkpoint/uncheck/3.png')
         self.rect = self.image.get_rect(topleft=pos)
         self.isChecked = False

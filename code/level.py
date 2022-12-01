@@ -15,15 +15,17 @@ from particles import ParticleEffect
 
 class Level:
     def __init__(self, level_data, surface):
-
         # level setup
+        self.first_spawn_point = (0, 0)
+        self.spawn_point = (0, 0)
+
+        self.is_respawn = False
         self.player = pygame.sprite.GroupSingle()
         self.tiles = pygame.sprite.Group()
         self.display_surface = surface
         self.level_data = level_data
         self.setup_level(level_data)
-        self.world_shift = 0
-        self.current_x = 0
+        self.world_shift = 8
 
         # dust
         self.dust_sprite = pygame.sprite.GroupSingle()
@@ -58,27 +60,34 @@ class Level:
                 x = col_index * tile_size
                 y = row_index * tile_size
 
+                if self.spawn_point[0] != 0:
+                    tile_x = x - self.spawn_point[0] + self.first_spawn_point[0]
+                else:
+                    tile_x = x
+
                 if cell == 'X':
-                    tile = Tile((x, y), tile_size)
+                    tile = Tile((tile_x, y), tile_size)
                     self.tiles.add(tile)
                 elif cell == 'G':
-                    tile = GravityBlock((x, y), tile_size)
+                    tile = GravityBlock((tile_x, y), tile_size)
                     self.tiles.add(tile)
                 elif cell == 'H':
-                    tile = HideBlock((x, y), tile_size)
+                    tile = HideBlock((tile_x, y), tile_size)
                     self.tiles.add(tile)
                 elif cell == 'T':
-                    tile = Tree((x, y), tile_size)
+                    tile = Tree((tile_x, y), tile_size)
                     self.tiles.add(tile)
                 elif cell == 'C':
-                    tile = Cloud((x, y), tile_size)
+                    tile = Cloud((tile_x, y), tile_size)
                     self.tiles.add(tile)
                 elif cell == 'S':
-                    tile = CheckPoint((x, y), tile_size)
+                    tile = CheckPoint((tile_x, y), tile_size)
+                    tile.real_pos = (x, y)
                     self.tiles.add(tile)
 
                 if cell == 'P':
                     player_sprite = Player((x, y), self.display_surface, self.create_jump_particles)
+                    self.first_spawn_point = (x, y)
                     self.player.add(player_sprite)
 
     def scroll_x(self):
@@ -112,7 +121,7 @@ class Level:
                         player.on_right = True
                         self.current_x = player.rect.right
                 if isinstance(tile, CheckPoint):
-                    self.player.sprite.spawn_point = tile.pos
+                    self.spawn_point = tile.real_pos
                     tile.isChecked = True
 
         if player.on_left and (player.rect.left < self.current_x or player.direction.x >= 0):
@@ -140,7 +149,7 @@ class Level:
                         player.direction.y = 0
                         player.on_ceiling = True
                 if isinstance(tile, CheckPoint):
-                    self.player.sprite.spawn_point = tile.pos
+                    self.spawn_point = tile.real_pos
                     tile.isChecked = True
 
                 if isinstance(tile, GravityBlock):
@@ -160,8 +169,14 @@ class Level:
 
         # level tiles
         self.tiles.update(self.world_shift)
+
         for tile in self.tiles:
             tile.draw(self.display_surface)
+
+        if self.player.sprite.is_die:
+            self.tiles.empty()
+            self.player.empty()
+            self.setup_level(self.level_data)
 
         self.scroll_x()
 
@@ -172,8 +187,4 @@ class Level:
         self.vertical_movement_collision()
         self.create_landing_dust()
         self.player.draw(self.display_surface)
-
-        if self.player.sprite.is_die:
-            self.player.sprite.rect.center = self.player.sprite.spawn_point
-            self.tiles.empty()
-            self.setup_level(self.level_data)
+        pygame.draw.rect(self.display_surface, 'red', self.player.sprite.rect, 2)
