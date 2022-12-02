@@ -13,7 +13,7 @@ class Player(pygame.sprite.Sprite):
         self.animation_speed = 0.15
         self.image = self.animations['idle'][self.frame_index]
         self.rect = self.image.get_rect(topleft=pos)
-        self.cheat = False
+        self.god_mode = False
 
         # dust particles
         self.import_dust_run_particles()
@@ -113,10 +113,11 @@ class Player(pygame.sprite.Sprite):
             self.facing_right = True
             self.jump()
             self.create_jump_particles(self.rect.midbottom)
-        elif keys[pygame.K_F1]:
-            self.cheat = not self.cheat
         else:
             self.direction.x = 0
+
+        if keys[pygame.K_F1]:
+            self.god_mode = not self.god_mode
 
         if keys[pygame.K_SPACE] and self.on_ground:
             self.jump()
@@ -134,7 +135,7 @@ class Player(pygame.sprite.Sprite):
                 self.status = 'idle'
 
     def apply_gravity(self):
-        if not self.cheat:
+        if not self.god_mode:
             self.direction.y += self.gravity
             self.rect.y += self.direction.y
 

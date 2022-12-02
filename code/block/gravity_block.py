@@ -26,4 +26,4 @@ class GravityBlock(Tile):
 
     def draw(self, screen):
         super(GravityBlock, self).draw(screen)
-        pygame.draw.rect(screen, 'violet', self.rect, 2)
+

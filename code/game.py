@@ -24,8 +24,8 @@ class Game:
         self.first_spawn_point = (0, 0)
         self.spawn_point = (0, 0)
         self.on_win = on_win
+        self.show_hit_box = False
 
-        self.is_respawn = False
         self.player = pygame.sprite.GroupSingle()
         self.enemies = pygame.sprite.Group()
         self.tiles = pygame.sprite.Group()
@@ -194,6 +194,12 @@ class Game:
         if player.on_ceiling and player.direction.y > 0.1:
             player.on_ceiling = False
 
+    def keyboard_event(self):
+        keys = pygame.key.get_pressed()
+
+        if pygame.KEYDOWN and keys[pygame.K_F2]:
+            self.show_hit_box = not self.show_hit_box
+
     def run(self):
         # dust particles
         self.dust_sprite.update(self.world_shift)
@@ -214,7 +220,7 @@ class Game:
 
         self.scroll_x()
 
-        #enemy:
+        # enemy:
         self.enemies.update(self.world_shift)
         for enemy in self.enemies.sprites():
             enemy.draw(self.display_surface)
@@ -226,7 +232,22 @@ class Game:
         self.vertical_movement_collision()
         self.create_landing_dust()
         self.player.draw(self.display_surface)
-        pygame.draw.rect(self.display_surface, 'green', self.player.sprite.rect, 2)
+
+        # cheat mode:
+        self.keyboard_event()
+        if self.show_hit_box:
+            pygame.draw.rect(self.display_surface, 'green', self.player.sprite.rect, 2)
+
+            for tile in self.tiles.sprites():
+                if isinstance(tile, GravityBlock):
+                    pygame.draw.rect(self.display_surface, 'violet', tile.rect, 2)
+                elif isinstance(tile, HideBlock):
+                    pygame.draw.rect(self.display_surface, 'red', tile.rect, 2)
+                elif isinstance(tile, RealDoorBlock):
+                    pygame.draw.rect(self.display_surface, 'green', tile.rect, 2)
+
+            for enemy in self.enemies.sprites():
+                pygame.draw.rect(self.display_surface, 'red', enemy.rect, 2)
 
         # Lives left text
         text = body_font.render(f'Lives left: {self.lives_left}', True, 'white')
