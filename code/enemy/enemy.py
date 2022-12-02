@@ -1,6 +1,6 @@
 import pygame
 
-from util import import_folder
+from code.util import import_folder
 
 
 class Enemy(pygame.sprite.Sprite):
