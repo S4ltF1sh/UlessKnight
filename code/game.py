@@ -8,6 +8,7 @@ from block.cloud import Cloud
 from block.gravity_block import GravityBlock
 from block.hide_block import HideBlock
 from block.tiles import Tile
+from enemy.enemy import Enemy
 
 from settings import tile_size, screen_width
 from player.player import Player
@@ -22,6 +23,7 @@ class Game:
 
         self.is_respawn = False
         self.player = pygame.sprite.GroupSingle()
+        self.enemies = pygame.sprite.Group()
         self.tiles = pygame.sprite.Group()
         self.display_surface = surface
         self.level_data = level_data
@@ -91,6 +93,9 @@ class Game:
                 elif cell == 'R':
                     tile = RealDoorBlock((tile_x, y), tile_size)
                     self.tiles.add(tile)
+                elif cell == 'E':
+                    enemy = Enemy((tile_x, y + 20), tile_size)
+                    self.enemies.add(enemy)
 
                 if cell == 'P':
                     player_sprite = Player((x, y), self.display_surface, self.create_jump_particles)
@@ -105,9 +110,11 @@ class Game:
         if player_x < screen_width / 4 and direction_x < 0:
             self.world_shift = 8
             player.speed = 0
+
         elif player_x > screen_width - (screen_width / 4) and direction_x > 0:
             self.world_shift = -8
             player.speed = 0
+
         else:
             self.world_shift = 0
             player.speed = 8
@@ -115,6 +122,16 @@ class Game:
     def horizontal_movement_collision(self):
         player = self.player.sprite
         player.rect.x += player.direction.x * player.speed
+
+        for enemy in self.enemies.sprites():
+            if enemy.rect.centerx > enemy.offset_x + tile_size * 2:
+                enemy.facing_right = False
+
+            if enemy.rect.centerx < enemy.offset_x - tile_size * 2:
+                enemy.facing_right = True
+
+            if enemy.rect.colliderect(player.rect):
+                player.is_die = True
 
         for tile in self.tiles.sprites():
             if tile.rect.colliderect(player.rect):
@@ -185,10 +202,16 @@ class Game:
 
         if self.player.sprite.is_die:
             self.tiles.empty()
+            self.enemies.empty()
             self.player.empty()
             self.setup_level(self.level_data)
 
         self.scroll_x()
+
+        #enemy:
+        self.enemies.update(self.world_shift)
+        for enemy in self.enemies.sprites():
+            enemy.draw(self.display_surface)
 
         # player
         self.player.update()
@@ -197,4 +220,4 @@ class Game:
         self.vertical_movement_collision()
         self.create_landing_dust()
         self.player.draw(self.display_surface)
-        pygame.draw.rect(self.display_surface, 'red', self.player.sprite.rect, 2)
+        pygame.draw.rect(self.display_surface, 'green', self.player.sprite.rect, 2)
