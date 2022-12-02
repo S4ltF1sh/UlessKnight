@@ -1,6 +1,6 @@
 import pygame
 
-from tiles import Tile
+from block.tiles import Tile
 from settings import *
 
 
@@ -26,3 +26,4 @@ class GravityBlock(Tile):
 
     def draw(self, screen):
         super(GravityBlock, self).draw(screen)
+        pygame.draw.rect(screen, 'violet', self.rect, 2)

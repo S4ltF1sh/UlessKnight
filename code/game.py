@@ -1,20 +1,20 @@
 import pygame
 
-from check_point import CheckPoint
-from fakedoor import FakeDoorBlock
-from realdoor import RealDoorBlock
-from tree import Tree
-from cloud import Cloud
-from gravity_block import GravityBlock
-from hide_block import HideBlock
+from block.check_point import CheckPoint
+from block.fakedoor import FakeDoorBlock
+from block.realdoor import RealDoorBlock
+from block.tree import Tree
+from block.cloud import Cloud
+from block.gravity_block import GravityBlock
+from block.hide_block import HideBlock
+from block.tiles import Tile
 
-from tiles import Tile
 from settings import tile_size, screen_width
-from player import Player
-from particles import ParticleEffect
+from player.player import Player
+from player.particles import ParticleEffect
 
 
-class Level:
+class Game:
     def __init__(self, level_data, surface):
         # level setup
         self.first_spawn_point = (0, 0)

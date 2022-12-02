@@ -1,4 +1,4 @@
-from tiles import Tile
+from block.tiles import Tile
 
 import pygame
 
@@ -14,5 +14,6 @@ class HideBlock(Tile):
         super(HideBlock, self).update(x_shift)
 
     def draw(self, screen):
+        pygame.draw.rect(screen, 'red', self.rect, 2)
         if self.is_show:
             super(HideBlock, self).draw(screen)

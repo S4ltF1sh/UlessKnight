@@ -10,6 +10,8 @@
       <option name="ignoredIdentifiers">
         <list>
           <option value="pygame.sprite.Sprite.*" />
+          <option value="code.block.gravity_block.settings" />
+          <option value="code.block.gravity_block.*" />
         </list>
       </option>
     </inspection_tool>

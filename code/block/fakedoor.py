@@ -1,6 +1,6 @@
 import pygame
 
-from tiles import Tile
+from block.tiles import Tile
 
 
 class FakeDoorBlock(Tile):
@@ -8,7 +8,7 @@ class FakeDoorBlock(Tile):
         super().__init__(pos, size)
         self.can_be_collided = False
         self.pos = pos
-        self.image = pygame.image.load('../graphics/door/close.png')
+        self.image = pygame.image.load('../graphics/map/door/close.png')
         self.rect = self.image.get_rect(topleft=pos)
         self.isChecked = False
 

@@ -1,14 +1,14 @@
 import pygame
 import sys
 
-from level import Level
+from game import Game
 from settings import *
 
 # Pygame setup
 pygame.init()
 screen = pygame.display.set_mode((screen_width, screen_height))
 clock = pygame.time.Clock()
-level = Level(level_map, screen)
+level = Game(level_map, screen)
 bg_surface = pygame.image.load('../graphics/map/background.png').convert()
 
 while True:
