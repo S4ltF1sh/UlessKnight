@@ -1,29 +1,34 @@
 import pygame
 
-from check_point import CheckPoint
-from tree import Tree
+from block.check_point import CheckPoint
+from block.fakedoor import FakeDoorBlock
+from block.realdoor import RealDoorBlock
+from block.tree import Tree
+from block.cloud import Cloud
+from block.gravity_block import GravityBlock
+from block.hide_block import HideBlock
+from block.tiles import Tile
+from enemy.enemy import Enemy
 
-from cloud import Cloud
-from gravity_block import GravityBlock
-
-from hide_block import HideBlock
-from tiles import Tile
 from settings import tile_size, screen_width
-from player import Player
-from particles import ParticleEffect
+from player.player import Player
+from player.particles import ParticleEffect
 
 
-class Level:
+class Game:
     def __init__(self, level_data, surface):
-
         # level setup
+        self.first_spawn_point = (0, 0)
+        self.spawn_point = (0, 0)
+
+        self.is_respawn = False
         self.player = pygame.sprite.GroupSingle()
+        self.enemies = pygame.sprite.Group()
         self.tiles = pygame.sprite.Group()
         self.display_surface = surface
         self.level_data = level_data
         self.setup_level(level_data)
-        self.world_shift = 0
-        self.current_x = 0
+        self.world_shift = 8
 
         # dust
         self.dust_sprite = pygame.sprite.GroupSingle()
@@ -58,27 +63,43 @@ class Level:
                 x = col_index * tile_size
                 y = row_index * tile_size
 
+                if self.spawn_point[0] != 0:
+                    tile_x = x - self.spawn_point[0] + self.first_spawn_point[0]
+                else:
+                    tile_x = x
+
                 if cell == 'X':
-                    tile = Tile((x, y), tile_size)
+                    tile = Tile((tile_x, y), tile_size)
                     self.tiles.add(tile)
                 elif cell == 'G':
-                    tile = GravityBlock((x, y), tile_size)
+                    tile = GravityBlock((tile_x, y), tile_size)
                     self.tiles.add(tile)
                 elif cell == 'H':
-                    tile = HideBlock((x, y), tile_size)
+                    tile = HideBlock((tile_x, y), tile_size)
                     self.tiles.add(tile)
                 elif cell == 'T':
-                    tile = Tree((x, y), tile_size)
+                    tile = Tree((tile_x, y), tile_size)
                     self.tiles.add(tile)
                 elif cell == 'C':
-                    tile = Cloud((x, y), tile_size)
+                    tile = Cloud((tile_x, y), tile_size)
                     self.tiles.add(tile)
                 elif cell == 'S':
-                    tile = CheckPoint((x, y), tile_size)
+                    tile = CheckPoint((tile_x, y), tile_size)
+                    tile.real_pos = (x, y)
                     self.tiles.add(tile)
+                elif cell == 'F':
+                    tile = FakeDoorBlock((tile_x, y), tile_size)
+                    self.tiles.add(tile)
+                elif cell == 'R':
+                    tile = RealDoorBlock((tile_x, y), tile_size)
+                    self.tiles.add(tile)
+                elif cell == 'E':
+                    enemy = Enemy((tile_x, y + 20), tile_size)
+                    self.enemies.add(enemy)
 
                 if cell == 'P':
                     player_sprite = Player((x, y), self.display_surface, self.create_jump_particles)
+                    self.first_spawn_point = (x, y)
                     self.player.add(player_sprite)
 
     def scroll_x(self):
@@ -89,9 +110,11 @@ class Level:
         if player_x < screen_width / 4 and direction_x < 0:
             self.world_shift = 8
             player.speed = 0
+
         elif player_x > screen_width - (screen_width / 4) and direction_x > 0:
             self.world_shift = -8
             player.speed = 0
+
         else:
             self.world_shift = 0
             player.speed = 8
@@ -99,6 +122,16 @@ class Level:
     def horizontal_movement_collision(self):
         player = self.player.sprite
         player.rect.x += player.direction.x * player.speed
+
+        for enemy in self.enemies.sprites():
+            if enemy.rect.centerx > enemy.offset_x + tile_size * 2:
+                enemy.facing_right = False
+
+            if enemy.rect.centerx < enemy.offset_x - tile_size * 2:
+                enemy.facing_right = True
+
+            if enemy.rect.colliderect(player.rect):
+                player.is_die = True
 
         for tile in self.tiles.sprites():
             if tile.rect.colliderect(player.rect):
@@ -112,8 +145,11 @@ class Level:
                         player.on_right = True
                         self.current_x = player.rect.right
                 if isinstance(tile, CheckPoint):
-                    self.player.sprite.spawn_point = tile.pos
+                    self.spawn_point = tile.real_pos
                     tile.isChecked = True
+                if isinstance(tile, RealDoorBlock):
+                    tile.isChecked = True
+                    # update wingame state
 
         if player.on_left and (player.rect.left < self.current_x or player.direction.x >= 0):
             player.on_left = False
@@ -140,7 +176,7 @@ class Level:
                         player.direction.y = 0
                         player.on_ceiling = True
                 if isinstance(tile, CheckPoint):
-                    self.player.sprite.spawn_point = tile.pos
+                    self.spawn_point = tile.real_pos
                     tile.isChecked = True
 
                 if isinstance(tile, GravityBlock):
@@ -160,10 +196,22 @@ class Level:
 
         # level tiles
         self.tiles.update(self.world_shift)
+
         for tile in self.tiles:
             tile.draw(self.display_surface)
 
+        if self.player.sprite.is_die:
+            self.tiles.empty()
+            self.enemies.empty()
+            self.player.empty()
+            self.setup_level(self.level_data)
+
         self.scroll_x()
+
+        #enemy:
+        self.enemies.update(self.world_shift)
+        for enemy in self.enemies.sprites():
+            enemy.draw(self.display_surface)
 
         # player
         self.player.update()
@@ -172,8 +220,4 @@ class Level:
         self.vertical_movement_collision()
         self.create_landing_dust()
         self.player.draw(self.display_surface)
-
-        if self.player.sprite.is_die:
-            self.player.sprite.rect.center = self.player.sprite.spawn_point
-            self.tiles.empty()
-            self.setup_level(self.level_data)
+        pygame.draw.rect(self.display_surface, 'green', self.player.sprite.rect, 2)

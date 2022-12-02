@@ -11,7 +11,6 @@ def machine_event(event_code: str):
         pygame.quit()
         sys.exit()
 
-
 # Pygame setup
 pygame.init()
 pygame.font.init()
