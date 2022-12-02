@@ -7,6 +7,7 @@ from code.game_state.state_high_scores import HighScoresState
 from code.game_state.state_intro import IntroState
 from code.game_state.state_pause import PauseState
 from code.game_state.state_play import PlayState
+from code.util import write_to_file
 
 
 class Machine:
@@ -48,8 +49,10 @@ class Machine:
         if event_code == PlayState.events["PAUSE"]:
             self.cache_state = self.state
             self.set_state(PauseState(on_select=self.__on_pause_events))
-        elif event_code == PlayState.events["GAME_OVER"]:
-            # self.set_state(GameOverState(on_select=self.__on_game_over_events, score_text="100"))
+        elif event_code.startswith(PlayState.events["WIN"]):
+            score = event_code.split(":")[1]
+            write_to_file('../high_scores.txt', score)
+            self.set_state(GameOverState(on_select=self.__on_game_over_events, score_text=score))
             pass
 
     def __on_pause_events(self, event_code: str):

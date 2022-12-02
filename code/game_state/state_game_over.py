@@ -49,7 +49,8 @@ class GameOverState(BaseState):
                                                   start_pos[1] + self.BUTTONS_MARGIN_TOP))
 
     def draw(self, screen):
-        screen.blit(title_font.render("GAME OVER", True, (255, 255, 255)), (screen_width / 2 - 200, 50))
+        text = title_font.render("WINNER WINNER CHICKEN DINNER", True, (255, 255, 255))
+        screen.blit(text, (screen_width / 2 - text.get_width() / 2, 50))
         screen.blit(self.score_surface,
                     (screen_width / 2 - self.score_surface.get_width() / 2, screen_height / 2 - 100))
         for i in range(len(self.selected_bt)):

@@ -1,3 +1,5 @@
+from typing import Callable
+
 import pygame
 
 from block.check_point import CheckPoint
@@ -8,6 +10,7 @@ from block.cloud import Cloud
 from block.gravity_block import GravityBlock
 from block.hide_block import HideBlock
 from block.tiles import Tile
+from code.game_state import body_font
 from enemy.enemy import Enemy
 
 from settings import tile_size, screen_width
@@ -16,10 +19,11 @@ from player.particles import ParticleEffect
 
 
 class Game:
-    def __init__(self, level_data, surface):
+    def __init__(self, level_data, surface, on_win: Callable[[int], None]):
         # level setup
         self.first_spawn_point = (0, 0)
         self.spawn_point = (0, 0)
+        self.on_win = on_win
 
         self.is_respawn = False
         self.player = pygame.sprite.GroupSingle()
@@ -29,6 +33,7 @@ class Game:
         self.level_data = level_data
         self.setup_level(level_data)
         self.world_shift = 8
+        self.lives_left = 5
 
         # dust
         self.dust_sprite = pygame.sprite.GroupSingle()
@@ -149,7 +154,7 @@ class Game:
                     tile.isChecked = True
                 if isinstance(tile, RealDoorBlock):
                     tile.isChecked = True
-                    # update wingame state
+                    self.on_win(self.lives_left)
 
         if player.on_left and (player.rect.left < self.current_x or player.direction.x >= 0):
             player.on_left = False
@@ -201,6 +206,7 @@ class Game:
             tile.draw(self.display_surface)
 
         if self.player.sprite.is_die:
+            self.lives_left -= 1
             self.tiles.empty()
             self.enemies.empty()
             self.player.empty()
@@ -221,3 +227,7 @@ class Game:
         self.create_landing_dust()
         self.player.draw(self.display_surface)
         pygame.draw.rect(self.display_surface, 'green', self.player.sprite.rect, 2)
+
+        # Lives left text
+        text = body_font.render(f'Lives left: {self.lives_left}', True, 'white')
+        self.display_surface.blit(text, (10, 10))

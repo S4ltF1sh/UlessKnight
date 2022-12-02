@@ -6,12 +6,15 @@ from code.settings import level_map
 
 
 class PlayState(BaseState):
-    events = {'PAUSE': 'PAUSE', 'GAME_OVER': 'GAME_OVER'}
+    events = {'PAUSE': 'PAUSE', 'WIN': 'WIN'}
 
     def __init__(self, on_select, screen: pygame.surface.Surface):
         super().__init__(on_select)
         self.__on_select = on_select
-        self.level = Game(level_map, screen)
+        self.level = Game(level_map, screen, self.on_win)
+
+    def on_win(self, point):
+        self.__on_select(self.events['WIN'] + ':' + str(point))
 
     def update(self, events):
         for event in events:

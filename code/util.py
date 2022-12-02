@@ -27,9 +27,12 @@ def gradient(window, left_colour, right_colour, target_rect):
     window.blit(colour_rect, target_rect)  # paint it
 
 
-def write_to_file(file_name: str, data: [str]):
+def write_to_file(file_name: str, new_score: str):
+    scores = read_from_file(file_name)
+    scores.append(new_score)
+    scores.sort(reverse=True)
     with open(file_name, 'w') as file:
-        for line in data:
+        for line in scores:
             file.write(line + '\n')
 
 
