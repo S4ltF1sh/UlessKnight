@@ -1,7 +1,7 @@
 import pygame
 
-from settings import screen_height
-from util import import_folder
+from code.settings import screen_height
+from code.util import import_folder
 
 
 class Player(pygame.sprite.Sprite):

@@ -1,6 +1,6 @@
 import pygame
 
-from block.tiles import Tile
+from code.block.tiles import Tile
 
 
 class RealDoorBlock(Tile):

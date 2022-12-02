@@ -1,4 +1,4 @@
-from block.tiles import Tile
+from code.block.tiles import Tile
 
 import pygame
 
